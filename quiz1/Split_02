@@ -1,0 +1,29 @@
+pen");
+		exit(1);
+	}
+
+	int end_offset = lseek(src_fd, 0, SEEK_END);
+	printf("Size : %d\n", end_offset);
+	lseek(src_fd, 0, SEEK_SET);
+	char buf[10];
+	int n;
+
+	while((n=read(src_fd, buf, 1)) > 0)
+	{
+		if(n == -1)
+			perror("Read");
+		if(write(split_1, buf, n) != n)
+			perror("Write Error_01");
+		if(lseek(src_fd, 0, SEEK_CUR) == (int)(end_offset/2))
+			break;
+	}
+	
+	while((n=read(src_fd, buf, 1)) > 0)
+	{
+		if(write(split_2, buf, n) != n)
+			perror("Write Error_02");
+	}
+	close(src_fd);
+	close(split_1);
+	close(split_2);
+}

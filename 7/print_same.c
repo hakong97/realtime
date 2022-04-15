@@ -14,7 +14,6 @@ int main (int argc, char* argv[])
 
 	DIR* dp;
 	struct dirent* dent;
-	char path[BUFSIZ];
 
 	if((dp = opendir(argv[1])) == NULL)
 	{
@@ -32,7 +31,7 @@ int main (int argc, char* argv[])
 
 	for(int i=0; i<count;i++)
 	{
-		for(int j=i; j<count;j++)
+		for(int j=i+1; j<count;j++)
 		{
 			if(ino[i] == ino[j])
 				printf("Same inode : %d\n", ino[j]);

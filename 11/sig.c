@@ -7,19 +7,20 @@
 
 void sig_child(int signo)
 {
-	printf("\nChild Process die (%d)", (int)getpid());
+	usleep(10);
+	printf("Child Process die (%d)\n", (int)getpid());
 	exit(1);
 }
 void sig_parent(int signo)
 {
-	wait(NULL);
-	printf("\nParent Process die (%d)\n", (int)getpid());
+	while(wait(NULL) != -1);
+	printf("Parent Process die (%d)\n", (int)getpid());
 	exit(1);
 }
 void sig_alarm(int signo)
 {
 	printf("After 3 Seconds... All Process die.......\n");
-	kill(0, 2);
+	kill(0, SIGINT);
 }
 int main(void)
 {

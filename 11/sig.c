@@ -5,37 +5,53 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-void sig_handler(int signo)
+void sig_child(int signo)
 {
-	printf("Child Process die (%d)\n", (int)getpid());
+	printf("\nChild Process die (%d)", (int)getpid());
+	exit(1);
+}
+void sig_parent(int signo)
+{
+	wait(NULL);
+	printf("\nParent Process die (%d)\n", (int)getpid());
+	exit(1);
+}
+void sig_alarm(int signo)
+{
+	printf("After 3 Seconds... All Process die.......\n");
+	kill(0, 2);
 }
 int main(void)
 {
 	int status;
-	void (*hand)(int);
-	hand = signal(SIGINT, sig_handler);
-	if(hand == SIG_ERR)
+	for(int i=0; i<3;i++)
 	{
-		perror("SIGNAL");
+		int pid;
+		pid = fork();
+		if(pid == 0)
+		{
+			if(signal(SIGINT,sig_child)==SIG_ERR)
+			{
+				perror("SIGNAL");
+				exit(1);
+			}
+			if(i==2)
+			{
+				printf("3 Child Process Run...\n");
+			}
+			pause();
+		}
+	}
+	if(signal(SIGINT,sig_parent) == SIG_ERR)
+	{
+		perror("SIGNAL_PARENT");
 		exit(1);
 	}
-
-	int pid1 = fork();
-	if(pid1 == 0)
+	if(signal(SIGALRM, sig_alarm) == SIG_ERR)
 	{
-		pause();
+		perror("SIGNAL_ALARM");
+		exit(1);
 	}
-	int pid2 = fork();
-	if(pid2 == 0)
-	{
-		pause();
-	}
-	int pid3 = fork();
-	if(pid3 == 0)
-	{
-		pause();
-	}
-	printf("3 child process run...\n");
-	while(wait(&status) != -1)
-		continue;
+	alarm(3);
+	pause();
 }

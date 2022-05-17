@@ -5,16 +5,18 @@
 #include <sys/types.h>
 #include <signal.h>
 
+pid_t pid;
+
 void sig_alarm(int signo)
 {
+
+	kill(pid, SIGINT); //SIGTERM 시그널 전송
 	printf("TIME LIMIT! PROCESS END\n");
-	kill(0, SIGTERM); //SIGTERM 시그널 전송
 	while(wait(NULL) != -1); //Child Process가 종료될 때 까지 대기
 	exit(1); // 프로그램 종료
 }
 int main (int argc, char* argv[])
 {
-	pid_t pid;
 	if(argc != 3)
 	{
 		printf("Usage : ./tlimit seconds program\n");

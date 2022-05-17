@@ -7,11 +7,11 @@ int i = 0;
 void sig_alarm(int signo)
 {
 	i++;
-	printf("Stopwatch : %d\n", i); //초 출력
+	printf("\n Stopwatch : %d ", i); //초 출력
 }
 void sig_int(int signo)
 {
-	printf("Stop : %d\n", i); //중단했을 때 초 출력
+	printf("<-- Stop!\n"); //중단했을 때
 	exit(1); //프로그램 종료
 }
 int main (void)

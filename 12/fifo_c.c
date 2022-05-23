@@ -2,40 +2,55 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <signal.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <string.h>
 
-void sig_int(int signo)
-{
-	printf("Chatting Finished!\n");
-	exit(1);
-}
 int main (void)
 {
-	int pd, n;
-	char msg[80];
+	int pd_send, pd_receive, n;
+	char msg_send[64];
+	char msg_receive[64];
 	
-	signal(SIGINT, sig_int);
-
-	if((pd = open("./HAN-FIFO", O_RDONLY)) == -1)
+	printf(" ----- FULL DUPLEX COMMUNICATION (CLIENT) -----\n");
+	if(mkfifo("./CtoS_FIFO", 0666) == -1)
+	{
+		perror("mkfifo");
+		exit(1);
+	}
+	if((pd_receive = open("./StoC_FIFO", O_RDONLY|O_NONBLOCK)) == -1)
 	{
 		perror("open");
 		exit(1);
 	}
 
-	printf(" ----- Client -----\n");
-	write(1, "To Server : ", 13);
-	scanf("%s", msg);
-	while(1)
+	if((pd_send = open("./CtoS_FIFO", O_WRONLY)) == -1)
 	{
-		n=write(pd, msg, strlen(msg)+1);
-		if(n == -1)
-		{
-			perror("write");
-			exit(1);
-		}
+		perror("open");
+		exit(1);
 	}
 
-	close(pd);
+	
+	while(1)
+	{
+		if((n=read(pd_receive, msg_receive, 64)) > 0)
+		{
+			printf("\nFrom Server : ");
+			write(1, msg_receive, n);
+			continue;
+		}
+		else
+		{
+			printf("\nTo Server : ");
+			scanf("%s", msg_send);
+			n = write(pd_send, msg_send, strlen(msg_send)+1);
+			if(n == -1)
+			{
+				perror("write");
+				exit(1);
+			}
+		}
+	}
+	close(pd_send);
+	close(pd_receive);
 }

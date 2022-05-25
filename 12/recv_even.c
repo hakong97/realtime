@@ -25,10 +25,10 @@ int main (void)
 
 	while(1)
 	{
-			msgctl(msgid, IPC_STAT, &q_buf);
-			if(q_buf.msg_qnum > 0)
+			msgctl(msgid, IPC_STAT, &q_buf); //메세지 큐 정보를 받아온다.
+			if(q_buf.msg_qnum > 0) //메세지 큐에 메세지가 1개 이상 있을 시
 			{
-				len = msgrcv(msgid, &inmsg, 80, 2, 0);
+				len = msgrcv(msgid, &inmsg, 80, 2, 0); //mtype이 짝수인 메세지를 출력한다.
 				printf("%d. Received Message : %s, Len : %d\n", i, inmsg.mtext, len);
 				i++;
 			}

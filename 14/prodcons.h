@@ -1,8 +1,8 @@
 #define SHM_KEY 1234
-#define SHM_SIZE
-#define SHM_MODE
-#define MAX_BUF
-#define NLOOPS
+#define SHM_SIZE 1024
+#define SHM_MODE (SHM_R | SHM_W | IPC_CREAT)
+#define MAX_BUF 5
+#define NLOOPS 10
 
 typedef struct
 {

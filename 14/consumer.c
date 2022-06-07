@@ -27,7 +27,7 @@ int wait(int semnum) //semid 대신 세마포어 넘버를 넘겨받는다
 	return 0;
 }
 
-int signal(int semnum) //signal 함수
+int signal(int semnum) 
 {
 	struct sembuf buf;
 	buf.sem_num = semnum;
@@ -41,7 +41,7 @@ int signal(int semnum) //signal 함수
 	return 0;
 }
 
-union senum //semctl을 위한 공용체
+union senum
 {
 	int val;
 	struct semid_ds* buf;
@@ -53,8 +53,8 @@ int main (void)
 	/*세마포어 변수*/
 	int mutex = 0;
 	int empty = 1;
-	int full =2;
-	
+	int full = 2;
+
 	/*공유메모리*/
 	BoundedBufferType* pBuf;
 	int shmid, i, data;
@@ -83,45 +83,49 @@ int main (void)
 		perror("semctl");
 		exit(1);
 	}
-
+	
 	/*공유메모리 생성*/
 	if((shmid = shmget(SHM_KEY, SHM_SIZE, SHM_MODE)) < 0)
 	{
 		perror("shmget");
 		exit(1);
 	}
-	
+
 	if((pBuf = (BoundedBufferType*)shmat(shmid, 0, 0)) == (void*) -1)
 	{
 		perror("shmat");
 		exit(1);
 	}
-	srand(0x8888); //rand seed
 
-	for(i = 0; i<NLOOPS;i++)
+	srand(0x9999); //rand() seed
+	for(i=0;i<NLOOPS;i++)
 	{
-		if((pBuf->counter) == MAX_BUF)
+		if(pBuf->counter == 0)
 		{
-			printf("Producer : Buffer full. Waiting...\n");
-			while(pBuf->counter == (int)MAX_BUF);
+			printf("Consumer: Buffer empty. Waiting.....\n");
+			while(pBuf->counter == 0);
 		}
+		
 		/*wait*/
-		wait(empty);
+		wait(full);
 		wait(mutex);
-		/*produce*/
-		printf("Producer : Producing an item...\n");
-		data = (rand()%100)*10000;
-		pBuf->buf[pBuf->in].data = data;
-		pBuf->in = (pBuf->in + 1) % MAX_BUF;
-		pBuf->counter++;
+		/*consumer*/
+		printf("Consumer: Consuming an item....\n");
+		data = pBuf->buf[pBuf->out].data;
+		pBuf->out = (pBuf->out+1) % MAX_BUF;
+		pBuf->counter--;
 		/*signal*/
 		signal(mutex);
-		signal(full);
-		usleep(data);
-
+		signal(empty);
+		usleep((rand()%100)*10000);
 	}
-	
-	printf("Producer: Produced %d items...\n", i);
-	sleep(2);
-	printf("Producer : %d items in buffer...\n", pBuf->counter);
+
+	printf("Consumer : Consumed %d items.....\n", i);
+	printf("Consumer : %d items in buffer.....\n", pBuf->counter);
+	if(shmctl(shmid, IPC_RMID, 0) < 0)
+	{
+		perror("shmctl");
+		exit(1);
+	}
+
 }
